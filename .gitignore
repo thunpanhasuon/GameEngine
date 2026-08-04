@@ -39,3 +39,6 @@ desktop.ini
 *.tmp
 *.swp
 *~
+
+# Code Runner scratch file: lands in the package dir and breaks `odin build .`
+tempCodeRunnerFile.odin

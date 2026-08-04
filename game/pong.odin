@@ -2,6 +2,7 @@ package game
 import "core:math"
 import "core:math/rand"
 import audio "../audio"
+import object "../object"
 
 FIELD_WIDTH  :: 800.0
 FIELD_HEIGHT :: 600.0
@@ -12,27 +13,14 @@ SFX_PADDLE :: "sounds/cursor_1_square.wav"
 SFX_WALL   :: "sounds/cursor_2_sine.wav"
 SFX_SCORE  :: "sounds/error_1_saw.wav"
 
-Velocity :: struct {
-  velx, vely: f32,
-}
-
-Box :: struct {
-  x, y, w, h: f32,
-}
-
-Physic :: struct {
-  box: Box,
-  velocity: Velocity
-}
-
-collision :: proc(box_a: Box, box_b: Box) -> bool {
+collision :: proc(box_a: object.Box, box_b: object.Box) -> bool {
   return box_a.x < box_b.x + box_b.w &&
          box_a.x + box_a.w > box_b.x &&
          box_a.y < box_b.y + box_b.h &&
          box_a.y + box_a.h > box_b.y
 }
 
-update_ball :: proc(o: ^Physic, a: ^Physic, b: ^Physic, dt: f32) {
+update_ball :: proc(o: ^object.GameObject, a: ^object.GameObject, b: ^object.GameObject, dt: f32) {
     o.box.x += o.velocity.velx * dt
     o.box.y += o.velocity.vely * dt
 
@@ -82,7 +70,7 @@ AI_DEADZONE   :: 4.0
 /* where the ball will cross target_x, accounting for the bounces it takes on
    the way there. free-flight y is folded back into the field: the path mirrors
    every (field height - ball height), so a triangle wave gives the real y */
-predict_ball_y :: proc(b: ^Physic, target_x: f32) -> f32 {
+predict_ball_y :: proc(b: ^object.GameObject, target_x: f32) -> f32 {
     span := FIELD_HEIGHT - b.box.h
     if b.velocity.velx == 0.0 || span <= 0.0 {
         return b.box.y
@@ -103,7 +91,7 @@ predict_ball_y :: proc(b: ^Physic, target_x: f32) -> f32 {
     return y
 }
 
-update_ai :: proc(o: ^Physic, b: ^Physic, dt: f32) {
+update_ai :: proc(o: ^object.GameObject, b: ^object.GameObject, dt: f32) {
     /* the ai sits on whichever side of the field it spawned on, so "incoming"
        is the ball travelling toward that side */
     on_right := o.box.x > b.box.x
@@ -148,7 +136,7 @@ update_ai :: proc(o: ^Physic, b: ^Physic, dt: f32) {
         o.box.y = FIELD_HEIGHT - o.box.h
     }
 }
-update_player :: proc(o: ^Physic, lx: f32, dt: f32) {
+update_player :: proc(o: ^object.GameObject, lx: f32, dt: f32) {
 
     o.box.y += lx * o.velocity.vely * dt
 
